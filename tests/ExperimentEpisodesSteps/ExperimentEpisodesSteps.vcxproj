@@ -175,6 +175,9 @@
     <ProjectReference Include="..\..\3rd-party\bullet3-2.86\build3\vs2010\BulletDynamics.vcxproj">
       <Project>{e8ba71f2-3b56-9d4f-a151-d41542a6b401}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\..\3rd-party\bullet3-2.86\build3\vs2010\LinearMath.vcxproj">
+      <Project>{d611b375-721f-1941-bc88-b3f7e227ac7e}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\3rd-party\bullet3-2.86\build3\vs2010\OpenGL_Window.vcxproj">
       <Project>{12820605-a402-f444-954e-ff051a08a3f3}</Project>
     </ProjectReference>
