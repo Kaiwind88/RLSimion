@@ -1,9 +1,8 @@
 #include "stdafx.h"
-#include "world-box1robot.h"
+#include "world-robotonly.h"
 #include "app.h"
 #include "noise.h"
 #include "Robot.h"
-#include "Box.h"
 
 
 double static getDistanceBetweenPoints(double x1, double y1, double x2, double y2) {
@@ -12,30 +11,24 @@ double static getDistanceBetweenPoints(double x1, double y1, double x2, double y
 }
 
 #define TargetX 12.4
-#define TargetY .0
+#define TargetY 0.0
 
 #define robotOrigin_x 3.0
 #define robotOrigin_y 0.0
 
-#define boxOrigin_x 5.0
-#define boxOrigin_y 0.0
 
-
-CMoveBoxOneRobot::CMoveBoxOneRobot(CConfigNode* pConfigNode)
+COnlyRobot::COnlyRobot(CConfigNode* pConfigNode)
 {
-	METADATA("World", "MoveBoxOneRobot");
+	METADATA("World", "MoveRobotOnly");
 
 	rob1_X = addStateVariable("rx1", "m", -50.0, 50.0);
 	rob1_Y = addStateVariable("ry1", "m", -50.0, 50.0);
-	box_X = addStateVariable("bx", "m", -50.0, 50.0);
-	box_Y = addStateVariable("by", "m", -50.0, 50.0);
 
 	rob1_forceX = addActionVariable("r1forceX", "N", -20.0, 20.0);
 	rob1_forceY = addActionVariable("r1forceY", "N", -20.0, 20.0);
 
 	GRAVITY = -9.8;
 	MASS_ROBOT = 0.5f;
-	MASS_BOX = 1.f;
 	MASS_GROUND = 0.f;
 
 	m_collisionConfiguration = new btDefaultCollisionConfiguration();
@@ -58,26 +51,7 @@ CMoveBoxOneRobot::CMoveBoxOneRobot(CConfigNode* pConfigNode)
 		createRigidBody(mass, groundTransform, groundShape, btVector4(0, 0, 1, 1));
 	}
 
-	///Creating dynamic box obj1
-	{
-
-		btBoxShape* colShape = createBoxShape(btVector3(1, 1, 1));
-		m_collisionShapes.push_back(colShape);
-		btTransform startTransform;
-		startTransform.setIdentity();
-		startTransform.setOrigin(btVector3(boxOrigin_x, 0.0, boxOrigin_y));
-		// if mass != 0.f object is dynamic
-		btScalar	mass(MASS_BOX);
-		btVector3 localInertia(0, 0, 0);
-		colShape->calculateLocalInertia(mass, localInertia);
-		btDefaultMotionState* boxMotionState = new btDefaultMotionState(startTransform);
-
-		m_box = new Box(mass, boxMotionState, colShape, localInertia);
-		m_dynamicsWorld->addRigidBody(m_box->getBody());
-
-	}
-
-	///creating a dynamic robot obj2 
+	///creating a dynamic robot obj1
 	{
 		btCollisionShape* robot1Shape = new btSphereShape(btScalar(0.5));
 		m_collisionShapes.push_back(robot1Shape);
@@ -95,16 +69,15 @@ CMoveBoxOneRobot::CMoveBoxOneRobot(CConfigNode* pConfigNode)
 	}
 
 	//the reward function
-	m_pRewardFunction->addRewardComponent(new CMoveBoxOneRobotReward());
+	m_pRewardFunction->addRewardComponent(new COnlyRobotReward());
 	m_pRewardFunction->initialize();
 }
 
-void CMoveBoxOneRobot::reset(CState *s)
+void COnlyRobot::reset(CState *s)
 {
 	btTransform robotTransform;
-	btTransform boxTransform;
 
-//	if (CSimionApp::get()->pExperiment->isEvaluationEpisode())
+	//	if (CSimionApp::get()->pExperiment->isEvaluationEpisode())
 	{
 		//fixed setting in evaluation episodes
 
@@ -116,23 +89,17 @@ void CMoveBoxOneRobot::reset(CState *s)
 
 
 		m_pRobot1->getBody()->getMotionState()->getWorldTransform(robotTransform);
-		m_box->getBody()->getMotionState()->getWorldTransform(boxTransform);
 
 		/// reset robot
 		robotTransform.setOrigin(btVector3(robotOrigin_x, 0.0, robotOrigin_y));
 		m_pRobot1->getBody()->setWorldTransform(robotTransform);
 		m_pRobot1->getBody()->getMotionState()->setWorldTransform(robotTransform);
-
-		///reset box
-		boxTransform.setOrigin(btVector3(boxOrigin_x, 0.0, boxOrigin_y));
-		m_box->getBody()->setWorldTransform(boxTransform);
-		m_box->getBody()->getMotionState()->setWorldTransform(boxTransform);
-
+	
 		///set initial values to state variables
 		s->set(rob1_X, robotOrigin_x);
 		s->set(rob1_Y, robotOrigin_y);
-		s->set(box_X, boxOrigin_x);
-		s->set(box_Y, boxOrigin_y);
+		printf("");
+
 	}
 	//else
 	//{
@@ -146,28 +113,17 @@ void CMoveBoxOneRobot::reset(CState *s)
 	//}
 }
 
-void CMoveBoxOneRobot::executeAction(CState *s, const CAction *a, double dt)
+void COnlyRobot::executeAction(CState *s, const CAction *a, double dt)
 {
 
 	double rob1forcex = a->get("r1forceX");
 	double rob1forcey = a->get("r1forceY");
 
-	btTransform box_trans;
 	btTransform r1_trans;
-
-	//Update Box
-	m_box->getBody()->getMotionState()->getWorldTransform(box_trans);
-
-	s->set(box_X, float(box_trans.getOrigin().getX()));
-	s->set(box_Y, float(box_trans.getOrigin().getZ()));
 
 	//Update Robot1
 	m_pRobot1->getBody()->applyCentralForce(btVector3(rob1forcex, 0, rob1forcey));
-
 	m_dynamicsWorld->stepSimulation(dt);
-
-	int numCollision = m_dynamicsWorld->getDispatcher()->getNumManifolds();
-
 	m_pRobot1->getBody()->getMotionState()->getWorldTransform(r1_trans);
 	s->set(rob1_X, double(r1_trans.getOrigin().getX()));
 	s->set(rob1_Y, double(r1_trans.getOrigin().getZ()));
@@ -176,49 +132,45 @@ void CMoveBoxOneRobot::executeAction(CState *s, const CAction *a, double dt)
 
 }
 
-double CMoveBoxOneRobotReward::getReward(const CState* s, const CAction* a, const CState* s_p)
+double COnlyRobotReward::getReward(const CState* s, const CAction* a, const CState* s_p)
 {
 	CExperiment* pExperiment = CSimionApp::get()->pExperiment.ptr();
 	bool bEval = CSimionApp::get()->pExperiment->isEvaluationEpisode();
 	int step = CSimionApp::get()->pExperiment->getStep();
 
-	double boxAfterX = s_p->get("bx");
-	double boxAfterY = s_p->get("by");
-
 	double robotAfterX = s_p->get("rx1");
 	double robotAfterY = s_p->get("ry1");
-
 
 	double distance = getDistanceBetweenPoints(TargetX, TargetY, robotAfterX, robotAfterY);
 
 	if (robotAfterX == 50.0 || robotAfterX == -50.0 || robotAfterY == 50.0 || robotAfterY == -50.0)
 	{
-		/*if(robotAfterX == 50.0)
+		if(robotAfterX == 50.0)
 		printf("me he caido hacia adelante\n");
 		if(robotAfterX == -50.0)
 		printf("me he caido hacia atras\n");
 		if(robotAfterY == 50.0)
 		printf("me he caido hacia la derecha\n");
 		if(robotAfterY == -50.0)
-		printf("me he caido hacia la izquierda\n");*/
+		printf("me he caido hacia la izquierda\n");
 		CSimionApp::get()->pExperiment->setTerminalState();
 		return -1;
 	}
 	if (distance < 0.5)
 	{
 		CSimionApp::get()->pExperiment->setTerminalState();
-		//printf("llego\n");
+		printf("llego\n");
 		return 1;
 	}
-	return 1 /( distance*distance);
+	return 1 / (distance*distance);
 }
 
-double CMoveBoxOneRobotReward::getMin()
+double COnlyRobotReward::getMin()
 {
 	return -1.0;
 }
 
-double CMoveBoxOneRobotReward::getMax()
+double COnlyRobotReward::getMax()
 {
 	return 1.0;
 }

@@ -6,6 +6,12 @@
 #include "Box.h"
 
 
+
+double static getDistanceBetweenPoints(double x1, double y1, double x2, double y2) {
+	double distance = sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2));
+	return distance;
+}
+
 CMoveBox2Robots::CMoveBox2Robots(CConfigNode* pConfigNode)
 {
 	METADATA("World", "MoveBox-2Robots");
@@ -17,8 +23,10 @@ CMoveBox2Robots::CMoveBox2Robots(CConfigNode* pConfigNode)
 	rob2_Y = addStateVariable("ry2", "m", -50.0, 50.0);
 	box_X  = addStateVariable("bx", "m", -50.0, 50.0);
 	box_Y  = addStateVariable("by", "m", -50.0, 50.0);
-	addConstant("TargetPointX", getRandomForTarget());
-	addConstant("TargetPointY", getRandomForTarget());
+
+	// En un futuro se pondrá para que se meta a mano desde el Badger
+	addConstant("TargetPointX", 32.4);
+	addConstant("TargetPointY", 17.0);
 
 	rob1_forceX = addActionVariable("r1forceX", "N", -8.0, 8.0);
 	rob1_forceY = addActionVariable("r1forceY", "N", -8.0, 8.0);
@@ -161,17 +169,13 @@ void CMoveBox2Robots::executeAction(CState *s, const CAction *a, double dt)
 		s->set(box_Y, float(box_trans.getOrigin().getZ()));
 
 		//Update Robot1
-		m_pRobot1->setAppliedForce(btVector3(rob1force_x, 0, rob1force_y));
-		m_pRobot1->getAppliedForce(applied_force1);
-		m_pRobot1->getBody()->applyCentralForce(applied_force1);
+		m_pRobot1->getBody()->applyCentralForce(btVector3(rob1force_x, 0, rob1force_y));
 		m_pRobot1->getBody()->getMotionState()->getWorldTransform(r1_trans);
 		s->set(rob1_X, float(r1_trans.getOrigin().getX()));
 		s->set(rob1_Y, float(r1_trans.getOrigin().getZ()));
 
 		//Update Robot2
-		m_pRobot2->setAppliedForce(btVector3(rob2force_x, 0, rob2force_y));
-		m_pRobot2->getAppliedForce(applied_force2);
-		m_pRobot2->getBody()->applyCentralForce(applied_force2);
+		m_pRobot2->getBody()->applyCentralForce(btVector3(rob2force_x, 0, rob2force_y));
 		m_pRobot2->getBody()->getMotionState()->getWorldTransform(r2_trans);
 		s->set(rob2_X, float(r2_trans.getOrigin().getX()));
 		s->set(rob2_Y, float(r2_trans.getOrigin().getZ()));
@@ -190,7 +194,7 @@ double CMoveBox2RobotsReward::getReward(const CState* s, const CAction* a, const
 	double boxAfterX = s_p->get("bx");
 	double boxAfterY = s_p->get("by");
 
-	double distance = getDistanceBetweenPoints(tX, tY, boxAfterX, boxAfterY);
+	double distance = (double) getDistanceBetweenPoints(tX, tY, boxAfterX, boxAfterY);
 	if (distance < 2) {
 		return 0.9;
 	}
@@ -209,14 +213,4 @@ double CMoveBox2RobotsReward::getMin()
 double CMoveBox2RobotsReward::getMax()
 {
 	return 1.0;
-}
-
-double getRandomForTarget()
-{
-	return double(rand() % 50);
-}
-
-double getDistanceBetweenPoints(double x1, double y1, double x2, double y2) {
-	double distance = sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2));
-	return distance;
 }

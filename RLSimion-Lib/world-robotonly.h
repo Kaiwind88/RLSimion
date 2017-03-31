@@ -6,27 +6,20 @@
 #include "../3rd-party/bullet3-2.86/src/btBulletDynamicsCommon.h"
 class btCollisionShape;
 class Robot;
-class Box;
-
 
 //Move box with 2 robots
-class CMoveBox2Robots : public CDynamicModel
+class COnlyRobot : public CDynamicModel
 {
 	/// All-Simulation variables
 	double GRAVITY;
 	double MASS_ROBOT;
-	double MASS_BOX;
 	double MASS_GROUND;
 
 	/// Episode variables
 	int rob1_X, rob1_Y;
-	int rob2_X, rob2_Y;
-	int box_X, box_Y;
-	
 
 	// Action variables
 	int rob1_forceX, rob1_forceY;
-	int rob2_forceX, rob2_forceY;	
 
 	///inicialización
 	btAlignedObjectArray<btCollisionShape*>	m_collisionShapes;
@@ -37,11 +30,10 @@ class CMoveBox2Robots : public CDynamicModel
 	btDiscreteDynamicsWorld* m_dynamicsWorld;
 
 	Robot *m_pRobot1;
-	Robot *m_pRobot2;
-	Box *m_box;
+
 public:
-	CMoveBox2Robots(CConfigNode* pParameters);
-	virtual ~CMoveBox2Robots() = default;
+	COnlyRobot(CConfigNode* pParameters);
+	virtual ~COnlyRobot() = default;
 
 	void reset(CState *s);
 	void executeAction(CState *s, const CAction *a, double dt);
@@ -54,7 +46,7 @@ public:
 
 	btRigidBody*	createRigidBody(float mass, const btTransform& startTransform, btCollisionShape* shape, const btVector4& color = btVector4(1, 0, 0, 1))
 	{
-		
+
 		//rigidbody is dynamic if and only if mass is non zero, otherwise static
 		bool isDynamic = (mass != 0.f);
 
@@ -83,7 +75,7 @@ public:
 	}
 };
 
-class CMoveBox2RobotsReward : public IRewardComponent
+class COnlyRobotReward : public IRewardComponent
 {
 public:
 	double getReward(const CState *s, const CAction *a, const CState *s_p);
@@ -91,5 +83,3 @@ public:
 	double getMin();
 	double getMax();
 };
-
-double getRandomForTarget();
