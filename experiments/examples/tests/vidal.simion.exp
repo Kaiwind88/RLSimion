@@ -1,0 +1,89 @@
+<RLSimion FileVersion="1.0.0.0">
+  <RLSimion>
+    <Log>
+      <Log-Freq>0.25</Log-Freq>
+      <Log-eval-episodes>true</Log-eval-episodes>
+      <Log-training-episodes>false</Log-training-episodes>
+    </Log>
+    <World>
+      <Num-Integration-Steps>1</Num-Integration-Steps>
+      <Delta-T>0.00125</Delta-T>
+      <Dynamic-Model>
+        <Model>
+          <FAST-Wind-turbine>
+            <FORKED-NODE Name="Evaluation-Mean-Wind-Speed" Alias="Evaluation-Mean-Wind-Speed">
+              <FORK-VALUE Name="Value-0">
+                <Evaluation-Mean-Wind-Speed>10</Evaluation-Mean-Wind-Speed>
+              </FORK-VALUE>
+              <FORK-VALUE Name="Value-1">
+                <Evaluation-Mean-Wind-Speed>12</Evaluation-Mean-Wind-Speed>
+              </FORK-VALUE>
+              <FORK-VALUE Name="Value-2">
+                <Evaluation-Mean-Wind-Speed>14</Evaluation-Mean-Wind-Speed>
+              </FORK-VALUE>
+              <FORK-VALUE Name="Value-3">
+                <Evaluation-Mean-Wind-Speed>16</Evaluation-Mean-Wind-Speed>
+              </FORK-VALUE>
+            </FORKED-NODE>
+            <Training-Mean-Wind-Speeds>
+              <Training-Mean-Wind-Speeds>12.5</Training-Mean-Wind-Speeds>
+            </Training-Mean-Wind-Speeds>
+          </FAST-Wind-turbine>
+        </Model>
+      </Dynamic-Model>
+    </World>
+    <Experiment>
+      <Random-Seed>1</Random-Seed>
+      <Num-Episodes>1</Num-Episodes>
+      <Eval-Freq>1</Eval-Freq>
+      <Progress-Update-Freq>1.0</Progress-Update-Freq>
+      <Episode-Length>150</Episode-Length>
+    </Experiment>
+    <SimGod>
+      <Simion>
+        <Type>
+          <Controller>
+            <Controller>
+              <Vidal>
+                <FORKED-NODE Name="A" Alias="A">
+                  <FORK-VALUE Name="Value-0">
+                    <A>0.01</A>
+                  </FORK-VALUE>
+                  <FORK-VALUE Name="Value-1">
+                    <A>0.1</A>
+                  </FORK-VALUE>
+                  <FORK-VALUE Name="Value-2">
+                    <A>1.0</A>
+                  </FORK-VALUE>
+                </FORKED-NODE>
+                <FORKED-NODE Name="K_alpha" Alias="K_alpha">
+                  <FORK-VALUE Name="Value-0">
+                    <K_alpha>5000000</K_alpha>
+                  </FORK-VALUE>
+                  <FORK-VALUE Name="Value-1">
+                    <K_alpha>500000</K_alpha>
+                  </FORK-VALUE>
+                  <FORK-VALUE Name="Value-2">
+                    <K_alpha>50000</K_alpha>
+                  </FORK-VALUE>
+                </FORKED-NODE>
+                <FORKED-NODE Name="KP" Alias="KP">
+                  <FORK-VALUE Name="Value-0">
+                    <KP>0.01</KP>
+                  </FORK-VALUE>
+                  <FORK-VALUE Name="Value-1">
+                    <KP>0.025</KP>
+                  </FORK-VALUE>
+                  <FORK-VALUE Name="Value-2">
+                    <KP>0.05</KP>
+                  </FORK-VALUE>
+                </FORKED-NODE>
+                <KI>0.0</KI>
+              </Vidal>
+            </Controller>
+          </Controller>
+        </Type>
+      </Simion>
+    </SimGod>
+  </RLSimion>
+</RLSimion>
